@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Listening Test Player</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: white;
+    }
+
+    .player-container {
+      max-width: 700px;
+      margin: auto;
+      background: rgb(64, 43, 44,0.65);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: white;
+    }
+
+    .dropdown {
+      margin-bottom: 15px;
+    }
+
+    select {
+      font-size: 16px;
+      padding: 5px 10px;
+    }
+
+    .progress-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .controls button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background-color: #0056b3;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="player-container">
+    <h2>Audio Player</h2>
+
+    <div class="dropdown">
+      <label for="trackSelector"><strong>Choose a track:</strong></label>
+      <select id="trackSelector" onchange="changeTrack(this.value)">
+        <option value="HWp1.mp3">4. Homework P1</option>
+        <option value="HWp2.mp3">5. Homework P2</option>
+      </select>
+    </div>
+
+    <audio id="audio" preload="auto">
+      <source id="audioSource" src="HWp1.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+
+    <div class="progress-container">
+      <span id="currentTime">0:00</span>
+      <input type="range" id="progressBar" value="0" min="0" max="100">
+      <span id="duration">0:00</span>
+    </div>
+
+    <div class="controls">
+      <button onclick="rewind()">⏪ 10s</button>
+      <button onclick="togglePlay()">▶️ / ⏸️</button>
+      <button onclick="forward()">⏩ 10s</button>
+      <button onclick="decreaseVolume()">🔉 Volume -</button>
+      <button onclick="increaseVolume()">🔊 Volume +</button>
+      <button onclick="decreaseSpeed()">⏬ Speed -</button>
+      <button onclick="increaseSpeed()">⏫ Speed +</button>
+    </div>
+
+    <div class="status" id="status" style="color:white">Volume: 100% | Speed: 1.00x</div>
+  </div>
+
+  <script>
+    const audio = document.getElementById("audio");
+    const source = document.getElementById("audioSource");
+    const progressBar = document.getElementById("progressBar");
+    const currentTimeLabel = document.getElementById("currentTime");
+    const durationLabel = document.getElementById("duration");
+    const status = document.getElementById("status");
+
+    function togglePlay() {
+      if (audio.paused || audio.ended) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    }
+
+    function rewind() {
+      audio.currentTime = Math.max(0, audio.currentTime - 10);
+    }
+
+    function forward() {
+      audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+    }
+
+    function increaseVolume() {
+      audio.volume = Math.min(1, audio.volume + 0.1);
+      updateStatus();
+    }
+
+    function decreaseVolume() {
+      audio.volume = Math.max(0, audio.volume - 0.1);
+      updateStatus();
+    }
+
+    function increaseSpeed() {
+      audio.playbackRate = Math.min(3, audio.playbackRate + 0.1);
+      updateStatus();
+    }
+
+    function decreaseSpeed() {
+      audio.playbackRate = Math.max(0.5, audio.playbackRate - 0.1);
+      updateStatus();
+    }
+
+    function changeTrack(filename) {
+      source.src = filename;
+      audio.load();
+      audio.play();
+    }
+
+    function updateStatus() {
+      status.textContent = `Volume: ${Math.round(audio.volume * 100)}% | Speed: ${audio.playbackRate.toFixed(2)}x`;
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' + secs : secs}`;
+    }
+
+    audio.addEventListener("timeupdate", () => {
+      progressBar.value = (audio.currentTime / audio.duration) * 100 || 0;
+      currentTimeLabel.textContent = formatTime(audio.currentTime);
+    });
+
+    audio.addEventListener("loadedmetadata", () => {
+      durationLabel.textContent = formatTime(audio.duration);
+    });
+
+    progressBar.addEventListener("input", () => {
+      audio.currentTime = (progressBar.value / 100) * audio.duration;
+    });
+
+    updateStatus();
+  </script>
+</body>
+</html>
